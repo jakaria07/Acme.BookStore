@@ -37,6 +37,7 @@ function configureRoutes() {
         path: '/authors',
         name: '::Menu:Authors',
         parentName: '::Menu:BookStore',
+        iconClass: 'fas fa-user',
         layout: eLayoutType.application,
         requiredPolicy: 'BookStore.Authors',
       },
