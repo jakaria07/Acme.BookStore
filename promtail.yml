@@ -1,0 +1,19 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: bookstore-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: bookstore
+          app: abp-bookstore
+          __path__: /app/Logs/logs.txt   # ← Exact file path in container

@@ -18,12 +18,13 @@ services:
     environment:
       - ConnectionStrings__Default=Host=postgres;Port=5432;Database=BookStore1;Username=postgres;Password=123456;
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
-      - App__SelfUrl=https://localhost:44314
-      - OpenIddict:Validation:UseDevelopmentCertificate=true
+      - ASPNETCORE_URLS=http://+:80
+      - App__SelfUrl=http://localhost:8080
+      - OpenIddict:Server:UseDevelopmentCertificate=true
     ports:
       - "8080:80"
-      - "44314:443"
+    volumes:
+      - ./src/Acme.BookStore.HttpApi.Host/Logs:/app/Logs   # ← Mount host Logs folder to container
     depends_on:
       - postgres
     restart: unless-stopped
@@ -38,14 +39,20 @@ services:
       - backend
     restart: unless-stopped
 
-  prometheus:
-    image: prom/prometheus:latest
+  loki:
+    image: grafana/loki:latest
     ports:
-      - "9090:9090"
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - ./promtail.yml:/etc/promtail/config.yml
+      - ./src/Acme.BookStore.HttpApi.Host/Logs:/app/Logs:ro   # ← Read-only mount of same host Logs folder
+    depends_on:
+      - loki
     restart: unless-stopped
 
   grafana:
@@ -55,16 +62,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin123
     depends_on:
-      - prometheus
+      - loki
     volumes:
       - grafana_data:/var/lib/grafana
-    restart: unless-stopped
-
-  loki:
-    image: grafana/loki:latest
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
 
 volumes:

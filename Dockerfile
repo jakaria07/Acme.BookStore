@@ -45,7 +45,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app ./
 
-COPY src/Acme.BookStore.HttpApi.Host/openiddict.pfx ./
+# COPY src/Acme.BookStore.HttpApi.Host/openiddict.pfx ./
 
 EXPOSE 80
 EXPOSE 443
